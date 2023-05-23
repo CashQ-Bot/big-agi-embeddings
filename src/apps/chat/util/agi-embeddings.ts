@@ -11,7 +11,8 @@ import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 // import {Redis} from "langchain/vectorstores";
 import { PineconeClient } from "@pinecone-database/pinecone";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
-
+import { callPublish } from '@/modules/openai/embeddings/embeddings.client';
+import {PasteGG} from "@/modules/pastegg/pastegg.types";
 
 
 /**
@@ -43,22 +44,7 @@ export const runEmbeddingsUpdatingState = async (conversationId: string, history
 
 
 async function getSystemMessageWithEmbeddings(question: string) {
-    const {embeddingsApiKey:dbHost, embeddingsIndex:index, embeddingsDocs:docsCount} = useSettingsStore.getState();
-    let defaultPrompt: string = "Use the following pieces of context to answer the users question. \\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\\n----------------\\n";
-    const client = new PineconeClient();
-    await client.init({
-        apiKey: dbHost,
-        environment: 'northamerica-northeast1-gcp',
-    });
-
-    const embeddings = new OpenAIEmbeddings({
-        openAIApiKey: getOpenAISettings().apiKey
-    });
-    const pineconeIndex = client.Index(index);
-    const docsearch = await PineconeStore.fromExistingIndex(embeddings,  { pineconeIndex });
-    const docs = await docsearch.similaritySearch(question,  docsCount);
-    let docsString: string = docs.map(doc => doc.pageContent).join("\\n\\n");
-    docsString = defaultPrompt+docsString;
+    const docsString = await callPublish(question)
     console.log(docsString)
     return docsString
 }

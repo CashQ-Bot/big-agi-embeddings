@@ -110,11 +110,11 @@ export function EmbeddingsSettings() {
           <Box>
             <Tooltip title=''>
               <FormLabel sx={{ minWidth: colWidth }}>
-                Negative Prompt <InfoOutlinedIcon sx={{ mx: 0.5 }} />
+                Index name <InfoOutlinedIcon sx={{ mx: 0.5 }} />
               </FormLabel>
             </Tooltip>
             <FormHelperText>
-              {index ? 'Custom' : 'Not set'}
+              {index ? '' : ''}
             </FormHelperText>
           </Box>
           <Input

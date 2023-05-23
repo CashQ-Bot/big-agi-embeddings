@@ -188,7 +188,7 @@ export const useSettingsStore = create<SettingsStore>()(
             embeddingsApiKey: '',
             setEmbeddingsApiKey: (val: string) => set({embeddingsApiKey: val}),
 
-            embeddingsIndex: '',
+            embeddingsIndex: 'index',
             setEmbeddingsIndex: (val: string) => set({embeddingsIndex: val}),
 
             embeddingsDocs: 1,
