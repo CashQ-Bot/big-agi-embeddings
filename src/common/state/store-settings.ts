@@ -192,7 +192,7 @@ export const useSettingsStore = create<SettingsStore>()(
             setEmbeddingsIndex: (val: string) => set({embeddingsIndex: val}),
 
             embeddingsDocs: 1,
-            setEmbeddingsDocs: (val: string) => set({embeddingsDocs: val}),
+            setEmbeddingsDocs: (val: number) => set({embeddingsDocs: val}),
         }),
         {
             name: 'app-settings',
