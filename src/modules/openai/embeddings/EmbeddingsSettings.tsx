@@ -178,7 +178,7 @@ export function EmbeddingsSettings() {
           <Input
             aria-label='Docs count for search'
             variant='outlined' placeholder=''
-            value={docsCount || embeddingsDefaultDocCount} onChange={(e) => setDocsCount(e.target.value as number)}
+            value={docsCount || embeddingsDefaultDocCount} onChange={(e) => setDocsCount(e.target.value as unknown as number)}
             slotProps={{
               input: {
                 type: 'number',
