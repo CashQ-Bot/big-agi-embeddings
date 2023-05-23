@@ -10,7 +10,7 @@ import { pasteGgPost } from '@/modules/pastegg/pastegg.server';
  * 'Proxy' that uploads a file to paste.gg.
  * Called by the UI to avoid CORS issues, as the browser cannot post directly to paste.gg.
  */
-export default async function handler(req: NextRequest, next) {
+export default async function handler(req: NextRequest) {
 
   try {
 
