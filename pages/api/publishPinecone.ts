@@ -16,7 +16,6 @@ import {PineconeStore} from "langchain/vectorstores/pinecone";
 export default async function handler(req: NextRequest) {
 
     try {
-
         const {to, question, dbHost, indexdb, docsCount, openaiKey, origin} = await req.json();
         if (req.method !== 'POST' || to !== 'pinecone.com' || !question)
             throw new Error('Invalid options');
