@@ -52,7 +52,7 @@ export function EmbeddingsSettings() {
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value);
 
-  const handleModelChange = (e: any, value: string | null) => value && setModelId(value);
+  //const handleModelChange = (e: any, value: string | null) => value && setModelId(value);
 
   const colWidth = 150;
 
