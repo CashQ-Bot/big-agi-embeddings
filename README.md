@@ -142,4 +142,4 @@ This project is licensed under the MIT License.
 
 [//]: # ([![GitHub issues]&#40;https://img.shields.io/github/issues/enricoros/big-agi&#41;]&#40;https://github.com/enricoros/big-agi/issues&#41;)
 
-Made with 💙
+Made with 💙 
