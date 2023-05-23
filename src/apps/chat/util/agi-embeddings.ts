@@ -48,7 +48,7 @@ async function getSystemMessageWithEmbeddings(question: string) {
     console.log(docsString)
     return docsString
 }
-export function updatePurposeInHistory(conversationId: string, history: DMessage[], systemMessageNew: String | null, purposeId: SystemPurposeId): DMessage[] {
+export function updatePurposeInHistory(conversationId: string, history: DMessage[], systemMessageNew: string | null, purposeId: SystemPurposeId): DMessage[] {
     const systemMessageIndex = history.findIndex(m => m.role === 'system');
     const systemMessage: DMessage = systemMessageIndex >= 0 ? history.splice(systemMessageIndex, 1)[0] : createDMessage('system', '');
     if (!systemMessage.updated && purposeId && SystemPurposes[purposeId]?.systemMessage) {
