@@ -11,7 +11,7 @@ export const embeddingsDefaultIndex: string = 'index';
 
 export const embeddingsDefaultDocCount: string = '1';
 
-export async function callPublish(question): Promise<String | null> {
+export async function callPublish(question): Promise<string | null> {
     const {embeddingsApiKey:dbHost, embeddingsIndex:index, embeddingsDocs:docsCount} = useSettingsStore.getState();
     try {
         const body = {
