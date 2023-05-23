@@ -1,9 +1,9 @@
 // noinspection ExceptionCaughtLocallyJS
 
-import {NextRequest, NextResponse} from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-import {PasteGG} from '@/modules/pastegg/pastegg.types';
-import {pasteGgPost} from '@/modules/pastegg/pastegg.server';
+import { PasteGG } from '@/modules/pastegg/pastegg.types';
+import { pasteGgPost } from '@/modules/pastegg/pastegg.server';
 
 
 /**
@@ -13,7 +13,8 @@ import {pasteGgPost} from '@/modules/pastegg/pastegg.server';
 export default async function handler(req: NextRequest) {
 
     try {
-        const {to, title, fileContent, fileName, origin}: PasteGG.API.Publish.RequestBody = await req.json();
+
+        const { to, title, fileContent, fileName, origin }: PasteGG.API.Publish.RequestBody = await req.json();
         if (req.method !== 'POST' || to !== 'paste.gg' || !title || !fileContent || !fileName)
             throw new Error('Invalid options');
 
@@ -29,11 +30,7 @@ export default async function handler(req: NextRequest) {
             expires: paste.result.expires || 'never',
             deletionKey: paste.result.deletion_key || 'none',
             created: paste.result.created_at,
-        }
-        satisfies
-        PasteGG.API.Publish.Response
-    ))
-        ;
+        } satisfies PasteGG.API.Publish.Response));
 
     } catch (error) {
 
@@ -41,15 +38,7 @@ export default async function handler(req: NextRequest) {
         return new NextResponse(JSON.stringify({
             type: 'error',
             error: error?.toString() || 'Network issue',
-        }
-        satisfies
-        PasteGG.API.Publish.Response
-    ),
-        {
-            status: 500
-        }
-    )
-        ;
+        } satisfies PasteGG.API.Publish.Response), { status: 500 });
 
     }
 
