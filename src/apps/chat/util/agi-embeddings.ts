@@ -48,13 +48,13 @@ async function getSystemMessageWithEmbeddings(question: string) {
     console.log(docsString)
     return docsString
 }
-export function updatePurposeInHistory(conversationId: string, history: DMessage[],systemMessageNew: string, purposeId: SystemPurposeId): DMessage[] {
+export function updatePurposeInHistory(conversationId: string, history: DMessage[], systemMessageNew: String | null, purposeId: SystemPurposeId): DMessage[] {
     const systemMessageIndex = history.findIndex(m => m.role === 'system');
     const systemMessage: DMessage = systemMessageIndex >= 0 ? history.splice(systemMessageIndex, 1)[0] : createDMessage('system', '');
     if (!systemMessage.updated && purposeId && SystemPurposes[purposeId]?.systemMessage) {
         systemMessage.purposeId = purposeId;
         // systemMessage.text = SystemPurposes[purposeId].systemMessage.replaceAll('{{Today}}', new Date().toISOString().split('T')[0]);
-        systemMessage.text = systemMessageNew
+        systemMessage.text = systemMessageNew ? systemMessageNew : SystemPurposes[purposeId].systemMessage.replaceAll('{{Today}}', new Date().toISOString().split('T')[0]);
     }
     history.unshift(systemMessage);
     useChatStore.getState().setMessages(conversationId, history);
