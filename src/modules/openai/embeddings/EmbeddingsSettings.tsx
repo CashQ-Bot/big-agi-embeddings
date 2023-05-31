@@ -37,22 +37,9 @@ export function EmbeddingsSettings() {
   const requiresKey = requireUserKeyEmbeddings;
   const isValidKey = apiKey ? isValidDatabaseUrl(apiKey) : !requiresKey;
 
-  // load models, if the server has a key, or the user provided one
-  /*const { data: modelsData, isLoading: loadingModels } = useQuery(['models', apiKey], {
-    enabled: isValidKey,
-    queryFn: () => fetch('/api/prodia/models', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...(apiKey ? { apiKey: apiKey } : {}) }),
-    }).then(res => res.json() as Promise<Prodia.API.Models.Response>),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });*/
-
   const handleToggleApiKeyVisibility = () => setShowApiKeyValue(!showApiKeyValue);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value);
-
-  //const handleModelChange = (e: any, value: string | null) => value && setModelId(value);
 
   const colWidth = 150;
 
@@ -63,7 +50,7 @@ export function EmbeddingsSettings() {
         <FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>
           <Box>
             <FormLabel sx={{ minWidth: colWidth }}>
-              Redis Connection URL
+              Pinecone API Key
             </FormLabel>
             <FormHelperText>
               {requiresKey ? '(required)' : '(optional)'}
@@ -83,32 +70,9 @@ export function EmbeddingsSettings() {
           />
         </FormControl>
 
-        {/*<FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>*/}
-        {/*  <FormLabel sx={{ minWidth: colWidth }}>*/}
-        {/*    Diffusion Model*/}
-        {/*  </FormLabel>*/}
-        {/*  <Select*/}
-        {/*    variant='outlined' placeholder={isValidKey ? 'Select a model' : 'Enter API Key'}*/}
-        {/*    value={modelId || prodiaDefaultModelId} onChange={handleModelChange}*/}
-        {/*    startDecorator={<FormatPaintIcon />}*/}
-        {/*    endDecorator={isValidKey && loadingModels && <CircularProgress size='sm' />}*/}
-        {/*    indicator={<KeyboardArrowDownIcon />}*/}
-        {/*    slotProps={{*/}
-        {/*      root: { sx: { width: '100%' } },*/}
-        {/*      indicator: { sx: { opacity: 0.5 } },*/}
-        {/*    }}*/}
-        {/*  >*/}
-        {/*    {modelsData && modelsData.models?.map((model, idx) => (*/}
-        {/*      <Option key={'prodia-model-' + idx} value={model.id}>*/}
-        {/*        {model.label}*/}
-        {/*      </Option>*/}
-        {/*    ))}*/}
-        {/*  </Select>*/}
-        {/*</FormControl>*/}
-
         <FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>
           <Box>
-            <Tooltip title=''>
+            <Tooltip title='Pinecone index name'>
               <FormLabel sx={{ minWidth: colWidth }}>
                 Index name <InfoOutlinedIcon sx={{ mx: 0.5 }} />
               </FormLabel>
@@ -126,47 +90,9 @@ export function EmbeddingsSettings() {
           />
         </FormControl>
 
-        {/*<FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>*/}
-        {/*  <Box>*/}
-        {/*    <Tooltip title='More steps boost image detail & quality but risk oversaturation and cost increase. Start from 20 steps, and increase gradually. Defaults to 25.'>*/}
-        {/*      <FormLabel sx={{ minWidth: colWidth }}>*/}
-        {/*        Diffusion Steps <InfoOutlinedIcon sx={{ mx: 0.5 }} />*/}
-        {/*      </FormLabel>*/}
-        {/*    </Tooltip>*/}
-        {/*    <FormHelperText>*/}
-        {/*      {steps === 25 ? 'Default' : steps > 30 ? (steps > 40 ? 'May be unnecessary' : 'More detail') : steps <= 15 ? 'Less detail' : 'Balanced'}*/}
-        {/*    </FormHelperText>*/}
-        {/*  </Box>*/}
-        {/*  <Slider*/}
-        {/*    aria-label='Image Generation steps' valueLabelDisplay='auto'*/}
-        {/*    value={steps} onChange={(e, value) => setSteps(value as number)}*/}
-        {/*    min={10} max={50} step={1} defaultValue={25}*/}
-        {/*    sx={{ width: '100%' }}*/}
-        {/*  />*/}
-        {/*</FormControl>*/}
-
-        {/*<FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>*/}
-        {/*  <Box>*/}
-        {/*    <Tooltip title='Adjust the prompt intensity for generation. Low values deviate, high values overfit. Default: 7 - a balanced start.'>*/}
-        {/*      <FormLabel sx={{ minWidth: colWidth }}>*/}
-        {/*        Cfg-Scale <InfoOutlinedIcon sx={{ mx: 0.5 }} />*/}
-        {/*      </FormLabel>*/}
-        {/*    </Tooltip>*/}
-        {/*    <FormHelperText>*/}
-        {/*      {cfgScale === 7 ? 'Default' : cfgScale >= 9 ? (cfgScale >= 12 ? 'Heavy guidance' : 'Intense guidance') : cfgScale <= 5 ? 'More freedom' : 'Balanced'}*/}
-        {/*    </FormHelperText>*/}
-        {/*  </Box>*/}
-        {/*  <Slider*/}
-        {/*    aria-label='Image Generation Guidance' valueLabelDisplay='auto'*/}
-        {/*    value={cfgScale} onChange={(e, value) => setCfgScale(value as number)}*/}
-        {/*    min={1} max={15} step={0.5} defaultValue={7}*/}
-        {/*    sx={{ width: '100%' }}*/}
-        {/*  />*/}
-        {/*</FormControl>*/}
-
         <FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>
           <Box>
-            <Tooltip title=''>
+            <Tooltip title='The number of documents to return from database'>
               <FormLabel sx={{ minWidth: colWidth }}>
                 Docs count <InfoOutlinedIcon sx={{ mx: 0.5 }} />
               </FormLabel>

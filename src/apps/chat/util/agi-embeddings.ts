@@ -53,7 +53,6 @@ export function updatePurposeInHistory(conversationId: string, history: DMessage
     const systemMessage: DMessage = systemMessageIndex >= 0 ? history.splice(systemMessageIndex, 1)[0] : createDMessage('system', '');
     if (!systemMessage.updated && purposeId && SystemPurposes[purposeId]?.systemMessage) {
         systemMessage.purposeId = purposeId;
-        // systemMessage.text = SystemPurposes[purposeId].systemMessage.replaceAll('{{Today}}', new Date().toISOString().split('T')[0]);
         systemMessage.text = systemMessageNew ? systemMessageNew : SystemPurposes[purposeId].systemMessage.replaceAll('{{Today}}', new Date().toISOString().split('T')[0]);
     }
     history.unshift(systemMessage);
