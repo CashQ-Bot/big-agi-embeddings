@@ -92,7 +92,7 @@ export function EmbeddingsSettings() {
 
         <FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>
           <Box>
-            <Tooltip title='The number of documents to return from database'>
+            <Tooltip title='The number of documents to return from vector database'>
               <FormLabel sx={{ minWidth: colWidth }}>
                 Docs count <InfoOutlinedIcon sx={{ mx: 0.5 }} />
               </FormLabel>
