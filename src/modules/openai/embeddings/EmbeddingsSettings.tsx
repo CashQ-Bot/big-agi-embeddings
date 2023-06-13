@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { shallow } from 'zustand/shallow';
-import { useQuery } from '@tanstack/react-query';
 
 import { Box, CircularProgress, FormControl, FormHelperText, FormLabel, IconButton, Input, Option, Select, Slider, Stack, Tooltip } from '@mui/joy';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
