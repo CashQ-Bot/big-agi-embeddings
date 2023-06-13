@@ -7,47 +7,70 @@ import {speakText} from '@/modules/elevenlabs/elevenlabs.client';
 import {useSettingsStore} from '@/common/state/store-settings';
 
 import {updateAutoConversationTitle} from './ai-functions';
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 // import {Redis} from "langchain/vectorstores";
-import { PineconeClient } from "@pinecone-database/pinecone";
-import { PineconeStore } from "langchain/vectorstores/pinecone";
-import { callPublish } from '@/modules/openai/embeddings/embeddings.client';
-import {PasteGG} from "@/modules/pastegg/pastegg.types";
+import {callPublish} from '@/modules/openai/embeddings/embeddings.client';
 
 
 /**
  * The main "chat" function. TODO: this is here so we can soon move it to the data model.
  */
 export const runEmbeddingsUpdatingState = async (conversationId: string, history: DMessage[], question: string, assistantModel: ChatModelId, systemPurpose: SystemPurposeId) => {
-
+    const {embeddingsChainType: chainType} = useSettingsStore.getState();
+    //console.log("ChainType:"+chainType)
+    //console.log(history)
+    let assistantMessageId = ""
+    if (chainType && chainType !== "" && chainType !== "none") {
+        history = updatePurposeInHistory(conversationId, history, null, systemPurpose);
+        assistantMessageId = createAssistantTypingMessage(conversationId, assistantModel, history[0].purposeId, '...');
+    }
     // update the system message from the active Purpose, if not manually edited
-    console.log(history)
-    const systemMessage = await getSystemMessageWithEmbeddings(question)
-    history = updatePurposeInHistory(conversationId, history, systemMessage, systemPurpose);
+    const response = await getResultWithEmbeddings(question, assistantModel)
+    if (response && response?.chainType !== "" && response?.chainType !== "none") {
+        const resultMessage = response.result;
+        //console.log(resultMessage)
+        //assistantMessageId = createAssistantTypingMessage(conversationId, assistantModel, history[0].purposeId, '...');
+        // when an abort controller is set, the UI switches to the "stop" mode
+        const controller = new AbortController();
+        const {startTyping, editMessage} = useChatStore.getState();
+        startTyping(conversationId, controller);
 
-    // create a blank and 'typing' message for the assistant
-    const assistantMessageId = createAssistantTypingMessage(conversationId, assistantModel, history[0].purposeId, '...');
+        await streamChainAssistantMessage(conversationId, assistantMessageId, history, assistantModel, editMessage, resultMessage);
 
-    // when an abort controller is set, the UI switches to the "stop" mode
-    const controller = new AbortController();
-    const {startTyping, editMessage} = useChatStore.getState();
-    startTyping(conversationId, controller);
+        // clear to send, again
+        startTyping(conversationId, null);
 
-    await streamAssistantMessage(conversationId, assistantMessageId, history, assistantModel, editMessage, controller.signal);
+        // update text, if needed
+        await updateAutoConversationTitle(conversationId);
+    } else {
+        const systemMessage = response.result;
+        history = updatePurposeInHistory(conversationId, history, systemMessage, systemPurpose);
 
-    // clear to send, again
-    startTyping(conversationId, null);
+        // create a blank and 'typing' message for the assistant
+        const assistantMessageId = createAssistantTypingMessage(conversationId, assistantModel, history[0].purposeId, '...');
 
-    // update text, if needed
-    await updateAutoConversationTitle(conversationId);
+        // when an abort controller is set, the UI switches to the "stop" mode
+        const controller = new AbortController();
+        const {startTyping, editMessage} = useChatStore.getState();
+        startTyping(conversationId, controller);
+
+        await streamAssistantMessage(conversationId, assistantMessageId, history, assistantModel, editMessage, controller.signal);
+
+        // clear to send, again
+        startTyping(conversationId, null);
+
+        // update text, if needed
+        await updateAutoConversationTitle(conversationId);
+    }
+
 };
 
 
-async function getSystemMessageWithEmbeddings(question: string) {
-    const docsString = await callPublish(question)
+async function getResultWithEmbeddings(question: string, model: string) {
+    const docsString = await callPublish(question, model)
     console.log(docsString)
     return docsString
 }
+
 export function updatePurposeInHistory(conversationId: string, history: DMessage[], systemMessageNew: string | null, purposeId: SystemPurposeId): DMessage[] {
     const systemMessageIndex = history.findIndex(m => m.role === 'system');
     const systemMessage: DMessage = systemMessageIndex >= 0 ? history.splice(systemMessageIndex, 1)[0] : createDMessage('system', '');
@@ -147,6 +170,98 @@ async function streamAssistantMessage(
 
                 editMessage(conversationId, assistantMessageId, {text: incrementalText}, false);
             }
+        }
+
+    } catch (error: any) {
+        if (error?.name === 'AbortError') {
+            // expected, the user clicked the "stop" button
+        } else {
+            // TODO: show an error to the UI
+            console.error('Fetch request error:', error);
+        }
+    }
+
+    // finally, stop the typing animation
+    editMessage(conversationId, assistantMessageId, {typing: false}, false);
+}
+
+//LangChain
+async function streamChainAssistantMessage(
+    conversationId: string, assistantMessageId: string, history: DMessage[],
+    chatModelId: string,
+    editMessage: (conversationId: string, messageId: string, updatedMessage: Partial<DMessage>, touch: boolean) => void,
+    resultMessage: string,
+) {
+
+    const {modelTemperature, modelMaxResponseTokens, elevenLabsAutoSpeak} = useSettingsStore.getState();
+    /*const payload: OpenAI.API.Chat.Request = {
+        api: getOpenAISettings(),
+        model: chatModelId,
+        messages: history.map(({role, text}) => ({
+            role: role,
+            content: text,
+        })),
+        temperature: modelTemperature,
+        max_tokens: modelMaxResponseTokens,
+    };
+    console.log(payload)*/
+    try {
+
+        /*const response = await fetch('/api/openai/stream-chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload),
+            signal: abortSignal,
+        });*/
+
+        if (resultMessage) {
+            //const reader = response.body.getReader();
+            /*const decoder = new TextDecoder('utf-8');
+
+            // loop forever until the read is done, or the abort controller is triggered
+            let incrementalText = '';
+            let parsedFirstPacket = false;
+            let sentFirstParagraph = false;
+            while (true) {
+                const {value, done} = await reader.read();
+
+                if (done) break;
+
+                incrementalText += decoder.decode(value, {stream: true});
+
+                // there may be a JSON object at the beginning of the message, which contains the model name (streaming workaround)
+                if (!parsedFirstPacket && incrementalText.startsWith('{')) {
+                    const endOfJson = incrementalText.indexOf('}');
+                    if (endOfJson > 0) {
+                        const json = incrementalText.substring(0, endOfJson + 1);
+                        incrementalText = incrementalText.substring(endOfJson + 1);
+                        try {
+                            const parsed: OpenAI.API.Chat.StreamingFirstResponse = JSON.parse(json);
+                            editMessage(conversationId, assistantMessageId, {originLLM: parsed.model}, false);
+                            parsedFirstPacket = true;
+                        } catch (e) {
+                            // error parsing JSON, ignore
+                            console.log('Error parsing JSON: ' + e);
+                        }
+                    }
+                }
+
+                // if the first paragraph (after the first packet) is complete, call the callback
+                if (parsedFirstPacket && elevenLabsAutoSpeak === 'firstLine' && !sentFirstParagraph) {
+                    let cutPoint = incrementalText.lastIndexOf('\n');
+                    if (cutPoint < 0)
+                        cutPoint = incrementalText.lastIndexOf('. ');
+                    if (cutPoint > 100 && cutPoint < 400) {
+                        sentFirstParagraph = true;
+                        const firstParagraph = incrementalText.substring(0, cutPoint);
+                        speakText(firstParagraph).then(() => false );
+                    }
+                }
+
+            }*/
+                editMessage(conversationId, assistantMessageId, {originLLM: chatModelId}, false);
+                speakText(resultMessage).then(() => false /* fire and forget, we don't want to stall this loop */);
+                editMessage(conversationId, assistantMessageId, {text: resultMessage}, false);
         }
 
     } catch (error: any) {

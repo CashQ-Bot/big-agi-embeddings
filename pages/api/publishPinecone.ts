@@ -1,12 +1,11 @@
 // noinspection ExceptionCaughtLocallyJS
 
 import {NextRequest, NextResponse} from 'next/server';
-
-import {PasteGG} from '@/modules/pastegg/pastegg.types';
 import {PineconeClient} from "@pinecone-database/pinecone";
 import {OpenAIEmbeddings} from "langchain/embeddings/openai";
-import {getOpenAISettings} from "@/modules/openai/openai.client";
 import {PineconeStore} from "langchain/vectorstores/pinecone";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { loadQAChain } from "langchain/chains";
 
 
 /**
@@ -16,7 +15,7 @@ import {PineconeStore} from "langchain/vectorstores/pinecone";
 export default async function handler(req: NextRequest) {
 
     try {
-        const {to, question, dbHost, indexdb, docsCount, openaiKey, origin} = await req.json();
+        const {to, question, dbHost, indexdb, docsCount, openaiKey, origin, model, chainType, modelTemp} = await req.json();
         if (req.method !== 'POST' || to !== 'pinecone.com' || !question)
             throw new Error('Invalid options');
         const index = !indexdb ? "index" : indexdb
@@ -33,15 +32,26 @@ export default async function handler(req: NextRequest) {
         const pineconeIndex = client.Index(index);
         const docsearch = await PineconeStore.fromExistingIndex(embeddings, {pineconeIndex});
         const docs = await docsearch.similaritySearch(question, docsCount);
-        let docsString: string = docs.map(doc => doc.pageContent).join("\\n\\n");
-        docsString = defaultPrompt + docsString;
-
+        let result: string
+        if (chainType && chainType!=="" && chainType!=="none") {
+            let llm = new ChatOpenAI({modelName:model, streaming:false, temperature:modelTemp, openAIApiKey:openaiKey});
+            let chain = loadQAChain(llm, {type:chainType});
+            //let res = await chain.run({inputDocuments:docs, question:question})
+            let res = await chain.call({
+                input_documents: docs,
+                question: question,
+            });
+            result = res.text;
+        } else {
+            result = docs.map(doc => doc.pageContent).join("\\n\\n");
+            result = defaultPrompt + result;
+        }
         return new NextResponse(JSON.stringify({
             type: 'success',
             //url: `https://paste.gg/${paste.result.id}`,
             //expires: paste.result.expires || 'never',
-            //deletionKey: paste.result.deletion_key || 'none',
-            prompt: docsString,
+            chainType: chainType,
+            result: result,
         }));
 
     } catch (error) {
