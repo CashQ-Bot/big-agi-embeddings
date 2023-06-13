@@ -11,8 +11,10 @@ export const embeddingsDefaultIndex: string = 'index';
 
 export const embeddingsDefaultDocCount: string = '1';
 
-export async function callPublish(question: string): Promise<string | null> {
-    const {embeddingsApiKey:dbHost, embeddingsIndex:index, embeddingsDocs:docsCount} = useSettingsStore.getState();
+export const embeddingsDefaultChainType: string = '';
+
+export async function callPublish(question: string, model: string): Promise<any | null> {
+    const {embeddingsApiKey:dbHost, embeddingsIndex:index, embeddingsDocs:docsCount, embeddingsChainType:chainType,modelTemperature:modelTemp} = useSettingsStore.getState();
     try {
         const body = {
             to: "pinecone.com",
@@ -21,7 +23,10 @@ export async function callPublish(question: string): Promise<string | null> {
             indexdb: index,
             docsCount:docsCount,
             openaiKey: getOpenAISettings().apiKey,
+            modelTemp: modelTemp,
             origin: getOrigin(),
+            model: model,
+            chainType:chainType
         };
 
         const response = await fetch('/api/publishPinecone', {
@@ -36,7 +41,8 @@ export async function callPublish(question: string): Promise<string | null> {
             if (res.type === 'success') {
                 // we log this to the console for extra safety
                 console.log('Data from middleware', res);
-                return res.prompt
+                //return res.prompt
+                return res
             }
 
             if (res.type === 'error')

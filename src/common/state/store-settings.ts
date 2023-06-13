@@ -97,6 +97,9 @@ interface SettingsStore {
 
     embeddingsDocs: number;
     setEmbeddingsDocs: (docs: number) => void;
+
+    embeddingsChainType: string;
+    setEmbeddingsChainType: (index: string) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -193,6 +196,9 @@ export const useSettingsStore = create<SettingsStore>()(
 
             embeddingsDocs: 1,
             setEmbeddingsDocs: (val: number) => set({embeddingsDocs: val}),
+
+            embeddingsChainType: '',
+            setEmbeddingsChainType: (val: string) => set({embeddingsChainType: val}),
         }),
         {
             name: 'app-settings',

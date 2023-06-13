@@ -19,8 +19,10 @@ import {
   isValidDatabaseUrl,
   embeddingsDefaultIndex,
   embeddingsDefaultDocCount,
+  embeddingsDefaultChainType,
   requireUserKeyEmbeddings,
 } from './embeddings.client';
+import {prodiaDefaultModelId} from "@/modules/prodia/prodia.client";
 
 
 export function EmbeddingsSettings() {
@@ -28,10 +30,11 @@ export function EmbeddingsSettings() {
   const [showApiKeyValue, setShowApiKeyValue] = React.useState(false);
 
   // external state
-  const { apiKey, setApiKey, index, setIndex, docsCount, setDocsCount} = useSettingsStore(state => ({
+  const { apiKey, setApiKey, index, setIndex, docsCount, setDocsCount,chainType,setChainType} = useSettingsStore(state => ({
     apiKey: state.embeddingsApiKey, setApiKey: state.setEmbeddingsApiKey,
     index: state.embeddingsIndex, setIndex: state.setEmbeddingsIndex,
     docsCount: state.embeddingsDocs, setDocsCount: state.setEmbeddingsDocs,
+    chainType: state.embeddingsChainType, setChainType: state.setEmbeddingsChainType,
   }), shallow);
 
   const requiresKey = requireUserKeyEmbeddings;
@@ -41,7 +44,11 @@ export function EmbeddingsSettings() {
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value);
 
+  const handleChainTypeChange = (e: any, value: string | null) => value && setChainType(value);
+
   const colWidth = 150;
+
+  const chainTypes = ['stuff', 'map_reduce', 'refine', 'map_rerank'];
 
   return (
     <Section title='📚 OpenAi Embeddings' collapsible collapsed disclaimer='Supported vector database: Redis' sx={{ mt: 2 }}>
@@ -113,6 +120,29 @@ export function EmbeddingsSettings() {
             }}
             sx={{ width: '100%' }}
           />
+        </FormControl>
+
+        <FormControl orientation='horizontal' sx={{ justifyContent: 'space-between' }}>
+          <FormLabel sx={{ minWidth: colWidth }}>
+            Chain type
+          </FormLabel>
+          <Select
+              variant='outlined' placeholder={isValidKey ? 'Select a model' : 'Enter API Key'}
+              value={chainType || embeddingsDefaultChainType} onChange={handleChainTypeChange}
+
+              indicator={<KeyboardArrowDownIcon />}
+              slotProps={{
+                root: { sx: { width: '100%' } },
+                indicator: { sx: { opacity: 0.5 } },
+              }}
+          >
+            <Option key={'chain-type-none'} value='none'>none</Option>
+            {chainTypes?.map((chain, idx) => (
+                <Option key={'chain-type-' + idx} value={chain}>
+                  {chain}
+                </Option>
+            ))}
+          </Select>
         </FormControl>
 
       </Stack>
