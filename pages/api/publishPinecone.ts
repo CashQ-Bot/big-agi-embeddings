@@ -33,8 +33,8 @@ export default async function handler(req: NextRequest) {
         const pineconeIndex = client.Index(index);
         const docsearch = await PineconeStore.fromExistingIndex(embeddings, {pineconeIndex});
         const docs = await docsearch.similaritySearch(question, docsCount);
-        let result: string
-        let resultDocs: any
+        let result: string = ""
+        let resultDocs: any = ""
         if (chainType && chainType!=="" && chainType!=="none") {
            /* let llm = new ChatOpenAI({modelName:model, streaming:false, temperature:modelTemp, openAIApiKey:openaiKey});
             let chain = loadQAChain(llm, {type:chainType});
