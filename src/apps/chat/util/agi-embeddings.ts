@@ -18,7 +18,7 @@ export const runEmbeddingsUpdatingState = async (conversationId: string, history
     const {embeddingsChainType: chainType} = useSettingsStore.getState();
     //console.log("ChainType:"+chainType)
     //console.log(history)
-    let assistantMessageId
+    let assistantMessageId = ""
     if (chainType && chainType !== "" && chainType !== "none") {
         history = updatePurposeInHistory(conversationId, history, null, systemPurpose);
         assistantMessageId = createAssistantTypingMessage(conversationId, assistantModel, history[0].purposeId, '...');
