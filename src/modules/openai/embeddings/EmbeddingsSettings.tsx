@@ -12,7 +12,7 @@ import { Section } from '@/common/components/Section';
 import { settingsGap } from '@/common/theme';
 import { useSettingsStore } from '@/common/state/store-settings';
 
-import { Embeddings } from './embeddings.types';
+
 import {
   isValidDatabaseUrl,
   embeddingsDefaultIndex,
