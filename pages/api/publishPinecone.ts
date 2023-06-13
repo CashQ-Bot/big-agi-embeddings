@@ -4,6 +4,7 @@ import {NextRequest, NextResponse} from 'next/server';
 import {PineconeClient} from "@pinecone-database/pinecone";
 import {OpenAIEmbeddings} from "langchain/embeddings/openai";
 import {PineconeStore} from "langchain/vectorstores/pinecone";
+import {RedisVectorStore} from "langchain/vectorstores/redis";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { loadQAChain } from "langchain/chains";
 
@@ -33,26 +34,29 @@ export default async function handler(req: NextRequest) {
         const docsearch = await PineconeStore.fromExistingIndex(embeddings, {pineconeIndex});
         const docs = await docsearch.similaritySearch(question, docsCount);
         let result: string
+        let resultDocs: any
         if (chainType && chainType!=="" && chainType!=="none") {
-            let llm = new ChatOpenAI({modelName:model, streaming:false, temperature:modelTemp, openAIApiKey:openaiKey});
+           /* let llm = new ChatOpenAI({modelName:model, streaming:false, temperature:modelTemp, openAIApiKey:openaiKey});
             let chain = loadQAChain(llm, {type:chainType});
-            //let res = await chain.run({inputDocuments:docs, question:question})
             let res = await chain.call({
                 input_documents: docs,
                 question: question,
             });
-            result = res.text;
+            result = res.text;*/
+            resultDocs = docs;
         } else {
             result = docs.map(doc => doc.pageContent).join("\\n\\n");
             result = defaultPrompt + result;
         }
-        return new NextResponse(JSON.stringify({
+        const payload = {
             type: 'success',
             //url: `https://paste.gg/${paste.result.id}`,
             //expires: paste.result.expires || 'never',
             chainType: chainType,
             result: result,
-        }));
+            resultDocs: resultDocs,
+        };
+        return new NextResponse(JSON.stringify(payload));
 
     } catch (error) {
 

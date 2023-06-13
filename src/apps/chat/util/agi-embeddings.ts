@@ -9,13 +9,15 @@ import {useSettingsStore} from '@/common/state/store-settings';
 import {updateAutoConversationTitle} from './ai-functions';
 // import {Redis} from "langchain/vectorstores";
 import {callPublish} from '@/modules/openai/embeddings/embeddings.client';
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { loadQAChain } from "langchain/chains";
 
 
 /**
  * The main "chat" function. TODO: this is here so we can soon move it to the data model.
  */
 export const runEmbeddingsUpdatingState = async (conversationId: string, history: DMessage[], question: string, assistantModel: ChatModelId, systemPurpose: SystemPurposeId) => {
-    const {embeddingsChainType: chainType} = useSettingsStore.getState();
+    const {embeddingsChainType: chainType,modelTemperature:modelTemp} = useSettingsStore.getState();
     //console.log("ChainType:"+chainType)
     //console.log(history)
     let assistantMessageId = ""
@@ -26,7 +28,17 @@ export const runEmbeddingsUpdatingState = async (conversationId: string, history
     // update the system message from the active Purpose, if not manually edited
     const response = await getResultWithEmbeddings(question, assistantModel)
     if (response && response?.chainType !== "" && response?.chainType !== "none") {
-        const resultMessage = response.result;
+        const resultDocs = response.resultDocs;
+
+        //----------
+        let llm = new ChatOpenAI({modelName:assistantModel, streaming:false, temperature:modelTemp, openAIApiKey:getOpenAISettings().apiKey});
+        let chain = loadQAChain(llm, {type:chainType as any});
+        let res = await chain.call({
+            input_documents: resultDocs,
+            question: question,
+        });
+        const resultMessage = res.text;
+        //----------
         //console.log(resultMessage)
         //assistantMessageId = createAssistantTypingMessage(conversationId, assistantModel, history[0].purposeId, '...');
         // when an abort controller is set, the UI switches to the "stop" mode
