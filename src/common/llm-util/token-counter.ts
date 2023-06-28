@@ -21,6 +21,7 @@ export const countModelTokens: (text: string, chatModelId: ChatModelId, debugFro
   function tokenCount(text: string, chatModelId: ChatModelId, debugFrom: string): number {
     if (!(chatModelId in tokenEncoders)) {
       try {
+        if (chatModelId == 'gpt-3.5-turbo-16k') chatModelId= 'gpt-3.5-turbo'
         tokenEncoders[chatModelId] = encoding_for_model(chatModelId);
       } catch (e) {
         tokenEncoders[chatModelId] = get_encoding('cl100k_base');
